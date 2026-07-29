@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ተዋሕዶ · Fact of the Day</title>
+<meta name="description" content="Ethiopian Orthodox Tewahedo Church — the day's saint, the Ethiopian date, fasting status, and one fact worth knowing. Companion to the EOTC Handbook.">
+<style>
+  :root{
+    --bg:#f6efe2; --card:#fffaf0; --ink:#2b2118; --muted:#7a6a55;
+    --accent:#8a1f1f; --accent2:#b8860b; --line:#e4d8c2; --chip:#efe5d0;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#191410; --card:#231c15; --ink:#f0e6d6; --muted:#a8977e;
+      --accent:#e06b5a; --accent2:#d4a83f; --line:#3a2f24; --chip:#2e251b; }
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height:100vh; padding:20px 16px 48px;
+    display:flex; flex-direction:column; align-items:center;
+    line-height:1.55;
+  }
+  .wrap{width:100%; max-width:560px;}
+  header{text-align:center; margin-bottom:18px;}
+  .geez{font-size:1.9rem; color:var(--accent); letter-spacing:.08em;}
+  .subtitle{font-size:.82rem; color:var(--muted); text-transform:uppercase; letter-spacing:.22em; margin-top:2px;}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:18px 20px; margin-bottom:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .datebar{display:flex; flex-wrap:wrap; gap:8px 14px; align-items:baseline; justify-content:center; text-align:center;}
+  .ethdate{font-size:1.5rem; font-weight:bold;}
+  .gregdate{color:var(--muted); font-size:.95rem; width:100%;}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:10px;}
+  .chip{background:var(--chip); border:1px solid var(--line); border-radius:999px; padding:3px 11px; font-size:.78rem; color:var(--muted);}
+  .chip b{color:var(--ink); font-weight:600;}
+  .fastchip{border-color:var(--accent);}
+  .label{font-size:.72rem; text-transform:uppercase; letter-spacing:.2em; color:var(--accent2); margin-bottom:6px;}
+  .saintname{font-size:1.25rem; font-weight:bold; margin-bottom:4px;}
+  .saintnote{color:var(--muted); font-size:.95rem;}
+  .facttitle{font-size:1.12rem; font-weight:bold; margin-bottom:8px; color:var(--accent);}
+  .factbody{font-size:1rem;}
+  .factref{margin-top:10px; font-size:.8rem; color:var(--muted); font-style:italic;}
+  .btnrow{display:flex; gap:10px; margin-top:14px;}
+  button{
+    flex:1; font-family:inherit; font-size:.92rem; padding:11px 10px;
+    border-radius:10px; border:1px solid var(--line); cursor:pointer;
+    background:var(--chip); color:var(--ink);
+  }
+  button.primary{background:var(--accent); border-color:var(--accent); color:#fff;}
+  button:active{transform:scale(.98);}
+  .nextfeast{font-size:.92rem; text-align:center; color:var(--muted);}
+  .nextfeast b{color:var(--ink);}
+  footer{margin-top:16px; text-align:center; font-size:.75rem; color:var(--muted); max-width:560px;}
+  footer a{color:var(--muted);}
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--bg); padding:8px 18px; border-radius:999px;
+    font-size:.85rem; opacity:0; transition:opacity .3s; pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="geez">ተዋሕዶ</div>
+    <div class="subtitle">Fact of the Day · Ethiopian Orthodox Tewahedo</div>
+  </header>
+
+  <div class="card">
+    <div class="datebar">
+      <span class="ethdate" id="ethdate">…</span>
+      <span class="gregdate" id="gregdate"></span>
+    </div>
+    <div class="chips">
+      <span class="chip" id="yearchip"></span>
+      <span class="chip fastchip" id="fastchip"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Today's commemoration</div>
+    <div class="saintname" id="saintname"></div>
+    <div class="saintnote" id="saintnote"></div>
+  </div>
+
+  <div class="card">
+    <div class="label">Fact of the day</div>
+    <div class="facttitle" id="facttitle"></div>
+    <div class="factbody" id="factbody"></div>
+    <div class="factref" id="factref"></div>
+    <div class="btnrow">
+      <button class="primary" id="sharebtn">Share this fact</button>
+      <button id="shufflebtn">Another one</button>
+    </div>
+  </div>
+
+  <div class="card nextfeast" id="nextfeast"></div>
+
+  <footer>
+    Dates computed on your device (Julian-day conversion + Bahire Hasab, verified against 2026–2028). Companion to the <i>Ethiopian Orthodox Tewahedo Church Handbook</i>. Saint assignments follow the common Senkessar-derived grids; parish lists vary on a few days (8, 9, 11, 22, 26). Fasting status is the canonical rule of thumb — your parish and soul-father are the authority.
+  </footer>
+</div>
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+/* ===== Calendar engine (self-tested against 2025–2028 known dates) ===== */
+const EPOCH = 1723856;
+function gregToJDN(y, m, d){ const a=Math.floor((14-m)/12), yy=y+4800-a, mm=m+12*a-3;
+  return d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045; }
+function jdnToGreg(j){ let a=j+32044,b=Math.floor((4*a+3)/146097),c=a-Math.floor(146097*b/4);
+  let dd=Math.floor((4*c+3)/1461),e=c-Math.floor(1461*dd/4),mm=Math.floor((5*e+2)/153);
+  return {d:e-Math.floor((153*mm+2)/5)+1, m:mm+3-12*Math.floor(mm/10), y:100*b+dd-4800+Math.floor(mm/10)}; }
+function ethToJDN(y,m,d){ return (EPOCH+365)+365*(y-1)+Math.floor(y/4)+30*m+d-31; }
+function jdnToEth(j){ const r=(j-EPOCH)%1461, n=(r%365)+365*Math.floor(r/1460);
+  return {y:4*Math.floor((j-EPOCH)/1461)+Math.floor(r/365)-Math.floor(r/1460), m:Math.floor(n/30)+1, d:(n%30)+1}; }
+function bahireHasab(Y){
+  const AA=5500+Y, evangelist=["John","Matthew","Mark","Luke"][AA%4];
+  const medeb=AA%19, wenber=medeb===0?18:medeb-1;
+  const metqi=(wenber*19)%30, abektie=(wenber*11)%30;
+  const bmJDN=ethToJDN(Y, metqi>14?1:2, metqi);
+  const tewsak=[7,6,5,4,3,2,8][(bmJDN+1)%7];
+  let mh=metqi+tewsak, ninM=metqi>14?5:6;
+  if(mh>30){mh-=30;ninM+=1;}
+  const nin=ethToJDN(Y,ninM,mh);
+  return {AA,evangelist,wenber,abektie,metqi,nineveh:nin,lentStart:nin+14,hosanna:nin+62,
+          siklet:nin+67,fasika:nin+69,ascension:nin+108,pentecost:nin+118,apostlesStart:nin+119};
+}
+const MONTHS=["Meskerem","Tikimt","Hidar","Tahsas","Tirr","Yekatit","Megabit","Miyazya","Ginbot","Sene","Hamle","Nehase","Pagume"];
+const WEEKDAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+/* ===== The 30-day commemoration grid (Handbook §8.4a; variants noted) ===== */
+const SAINTS=[
+["Lideta Maryam & the Prophet Elias","The Nativity of the Virgin — and Elijah, taken up in the chariot of fire."],
+["Thaddeus the Apostle","With Abba Guba of the Nine Saints who planted monasticism in Ethiopia."],
+["Ba'ata","The three-year-old Virgin's Entrance into the Temple — where tradition says she was fed by angels."],
+["John the Evangelist","The 'Son of Thunder' — beloved disciple, whose tradition Ethiopia links to the Quartodeciman Pascha."],
+["Abbo (Gebre Menfes Kidus) & Peter and Paul","The hermit of Mount Zuqualla, clothed in his own hair, flanked by lions and leopards."],
+["Qusquam","The Holy Family's refuge in Egypt — the exile years of the child Christ."],
+["Sillassie — the Holy Trinity","'Three in name, in person, in deed — one in essence, in divinity, in will.'"],
+["The Cherubim & Abba Kiros","The Four Living Creatures around the throne. (Some lists lead with Kiros alone.)"],
+["Thomas & the 318 Nicene Fathers","The council whose creed the whole church still sings. (Lists disagree on which Thomas.)"],
+["Meskel — the Holy Cross","The monthly echo of the Finding of the True Cross."],
+["Hanna & Joachim, and St. Yared","The Virgin's parents — and the father of Ethiopian sacred music. (Yared: 11th or 12th by list.)"],
+["Archangel Michael","The chief captain — kept 'on the 12th day of each month, of which two are great annual feasts.'"],
+["Egziabher Ab & Archangel Rufael","God the Father — and Raphael, healer, 'over the spirits of men' (1 Enoch 20)."],
+["Abune Aregawi","Leader of the Nine Saints, who climbed to Debre Damo — tradition says by a serpent's tail."],
+["Kirkos & Iyeluta","The child-martyr Cyricus and his mother Julitta."],
+["Kidane Mehret — the Covenant of Mercy","Christ's covenant with His mother: mercy for those who seek her intercession."],
+["Estifanos the Protomartyr","The first to die for the faith — with Abba Gerima of the Nine Saints."],
+["Abune Ewostatewos & Philip","The monk whose Sabbath movement gave Ethiopia its two Sabbaths (Council of 1450)."],
+["Archangel Gabriel","The angel of the Annunciation — in December, hundreds of thousands walk to Kulubi for him."],
+["Hintsete Beta Kristiyan","The Dedication of the Church, in the Virgin's name."],
+["Egze'etna Maryam — Our Lady","Mary's monthly day; the annual version (Tirr 21) is her Dormition."],
+["Archangel Uriel & St. Daqsyos","The angel who guided Enoch through the courses of the stars. (Older lists: Daqsyos alone.)"],
+["Kidus Giyorgis — St. George","Ethiopia's patron megalomartyr, painted on horseback in nearly every church."],
+["Abune Tekle Haymanot & the 24 Heavenly Priests","The great native saint — six-winged, one-legged in the icons."],
+["St. Merkorios","The soldier-martyr Mercurius."],
+["St. Joseph & Abba Salama","The Virgin's guardian — and Frumentius, 'Revealer of Light,' Ethiopia's first bishop."],
+["Medhane Alem — Saviour of the World","The monthly remembrance of the Crucifixion."],
+["Amanuel","Emmanuel — 'God with us.'"],
+["Bale Wold — God the Son","The monthly Nativity: every 29th echoes Tahsas 29, Genna."],
+["Yohannes Metmiq & St. Mark","John the Baptist — and the evangelist whose see, Alexandria, mothered the Ethiopian church."]
+];
+
+/* ===== Fact library (distilled from the Handbook; ref = chapter) ===== */
+const FACTS=[
+["Bethlehem bakes the bread","Every Ethiopian Orthodox church compound has a small bakehouse called Bete Lehem — 'house of bread,' the same name as the town of the Nativity. The communion loaf must be baked there no earlier than three hours before the liturgy, and must still be warm at communion. Every Eucharist begins, literally, in Bethlehem at dawn.","§20.2"],
+["One monk guards the Ark","The church teaches that the original Ark of the Covenant rests in a chapel at Axum, watched by a single guardian monk appointed for life. He never leaves the chapel grounds, and he alone may see it — not the Patriarch, not scholars, no one, ever.","§2.3"],
+["The biggest Bible in Christendom","The Ethiopian canon numbers 81 books — the largest of any church — including works like Enoch and Jubilees that survive complete only in Ge'ez. When Europe wanted the Book of Enoch, it had to come to Ethiopia to get it (James Bruce, 1773).","Ch. 7"],
+["The New Testament quotes Enoch","Jude 1:14–15 quotes 1 Enoch 1:9 nearly word for word — the only named quotation of a book outside the common canon in the whole New Testament. Ethiopia, which kept Enoch as Scripture, has always pointed to that verse and rested its case.","§19.2"],
+["Enoch comes before Genesis","In most surveyed Ethiopian Bible manuscripts, the Book of Enoch doesn't just appear — it opens the whole volume, placed before Genesis. The logic: it is the oldest book, written before the Flood, so it goes first.","§19.2"],
+["Writing was a forbidden art","In 1 Enoch, the fallen angel Penemue 'instructed mankind in writing with ink and paper, and thereby many sinned from eternity to eternity.' The book that survives because scribes copied it for 2,000 years lists writing itself among the dangerous gifts of the fallen angels.","§19.5"],
+["Hot as fire, cold as ice","Enoch's vision of God's house: 'I entered into that house, and it was hot as fire and cold as ice… ten thousand times ten thousand stood before Him, yet He needed no counselor.' One of the oldest throne-room visions in all religious literature — preserved only in Ethiopia.","§19.4"],
+["Demons are hungry ghosts","In Enoch's demonology — the standard one of Jesus's era — demons are the disembodied spirits of the drowned giants: 'they take no food, but nevertheless hunger and thirst.' The Watchers fell once; their orphaned ghosts trouble the world still.","§19.4"],
+["Enoch lived a solar year of years","Genesis gives Enoch's lifespan as exactly 365 years — a year of years for the patriarch whose book teaches the calendar of the sun. His own Astronomical Book insists the year has 364 days; the church that canonized it runs a 365-day calendar. Nobody litigates; everybody savors.","§19.6"],
+["The fast that shapes a cuisine","Ethiopian Orthodox fasting reaches about 250 days a year for the devout — vegan, with nothing before 3 p.m. on strict days. It's why Ethiopian cuisine is the world's accidental vegan treasure: the beloved beyaynetu platter exists because of the church calendar. National milk production measurably drops every Lent.","Ch. 18"],
+["55 days, and why","Ethiopian Lent runs 55 days — Christ's 40, Holy Week's 7, plus a mysterious first week: the Fast of Heraclius, tied to a 7th-century emperor, a stolen True Cross, and a broken oath in Jerusalem that the church took upon itself to atone, week by week, forever.","§18.7"],
+["The only instrument of Lent","During the Great Fast all secular music stops and even the church's drums fall silent. One instrument remains: the begena, the great ten-string lyre called the Harp of David, whose buzzing, somber sound simply is the sound of Ethiopian Lent.","§18.7"],
+["Count to 41 on your fingers","Near the end of every liturgy the whole congregation repeats 'O Lord, have mercy upon us, O Christ' exactly 41 times, counted on fingers. Tradition links the number to the 39 lashes, plus the spear, plus the crown of thorns.","§20.6"],
+["The priest flicks water at you","Before communion the priest washes his hands and flicks the water toward the people with a warning straight out of the liturgy: 'I am pure from the blood of you all; if you presumptuously draw nigh… I will not be responsible.' Approaching the chalice, the church teaches, is approaching fire.","§20.5"],
+["The spoon is Isaiah's tongs","The little cross-spoon that administers the consecrated wine is blessed as 'the Seraph's tongs' — the tongs that carried the live coal to Isaiah's lips. At every communion, Isaiah 6 happens again, mouth by mouth.","§20.3"],
+["The censer is Mary","The liturgy addresses Mary as 'the golden censer which didst bear the coal of fire.' The censer is the Virgin; the burning coal inside is Christ — divinity burning in humanity without consuming it. Every swing of incense past your face is the Incarnation passing by.","§20.3"],
+["Babies commune first","The missal fixes the order of communion: clergy by rank — and then, before all other laity, the newly baptized infants. In the Ethiopian church, the forty-day-old at her baptism outranks every adult in line.","§20.7"],
+["Wine from raisins, made that morning","The eucharistic wine is pressed fresh from raisins soaked in water a few hours before each liturgy — made new every time, consumed entirely, nothing reserved. Bread and wine are both born and finished within a single morning.","§20.2"],
+["'Go out, O catechumens!'","Halfway through every liturgy a deacon still cries the ancient dismissal of the unbaptized: 'Go out, O catechumens.' Nobody has actually left for centuries. The church keeps the words as a boundary-stone marking how holy the next part is.","§20.4"],
+["A church is its tabot","In Ethiopia it is not the building that is consecrated but the tabot — the Ark-replica tablet in the inner sanctuary. Remove it and the building is just a hall; carry it out (wrapped, on a priest's head) and the church itself is walking in the Timket procession.","§12.2"],
+["It's not 2026 there","Ethiopia's calendar runs 7–8 years behind the West — not by error, but because it kept the older Alexandrian calculation of the Incarnation. Ethiopia celebrated the year 2000 in September 2007, and the year has 13 months: twelve of exactly 30 days, plus little Pagume.","§18.1"],
+["Twelve o'clock means dawn","The Ethiopian clock starts counting at sunrise: '12 o'clock' is 6 a.m., '1 in the morning' is 7 a.m. Ask what time liturgy starts and you may hear 'at 12' — meaning dawn.","§18.1"],
+["Easter is moon-math","Fasika is computed, not observed: a number called the Metqi ('trumpet') announces the paschal new moon, the Fast of Nineveh lands on a Monday, and Easter follows exactly 69 days later — arithmetic the church has run on paper for seventeen centuries. It works because of a cosmic coincidence: 19 solar years and 235 lunar months agree within two hours.","§18.2a–18.3"],
+["'Epact' lives in Ge'ez","The Bahire Hasab's key number, the abektie, is literally the Greek word epaktē — 'added days' — borrowed into Ge'ez seventeen centuries ago and still doing its original job: tracking the eleven days the sun outruns the moon each year.","§18.2a"],
+["354 days and 22 kekros","The church's own figure for the lunar year is '354 days and 22 kekros' — a kekros being 1/60 of a day. That's 354.367 days: the modern astronomical value, correct to four significant figures, preserved in a liturgical textbook.","§18.2a"],
+["Two Sabbaths, on purpose","Since the Council of Debre Mitmaq in 1450, the Ethiopian church officially keeps both Saturday and Sunday holy — the resolution of a century-long movement led by the monk Ewostatewos, who died in exile for the Saturday Sabbath and now has the 18th of every month.","§4.3"],
+["The first cross on a coin","King Ezana of Aksum converted around the 330s AD — and his mints switched from the crescent to the cross, among the first cross-bearing coinage ever struck anywhere. Ethiopia's conversion is stamped in metal you can still hold.","§3.1"],
+["A kidnapped boy became the first bishop","Frumentius was a shipwrecked boy enslaved to the Aksumite court; he rose to royal tutor, went to Alexandria to ask for a bishop for Ethiopia — and was consecrated himself. Ethiopians call him Kesate Birhan, 'Revealer of Light.' He holds the 26th of every month, quietly, beside St. Joseph.","§3.2"],
+["The oldest illustrated gospels on earth","The Garima Gospels, kept at an Ethiopian monastery, have been radiocarbon-dated as far back as the 4th–6th centuries — the world's earliest illustrated Christian manuscripts, matching the tradition that Abba Garima arrived in 494.","§3.4"],
+["A monastery you enter by rope","Debre Damo, founded in the 6th century atop a sheer-cliffed flat mountain, is still reached the only way it ever was: climbing a leather rope up the cliff face. Tradition says its founder, Abune Aregawi, first ascended by the tail of a serpent.","§13.3"],
+["Churches carved downward","The eleven churches of Lalibela were not built — they were excavated, carved down into living volcanic rock as a 'New Jerusalem,' with a Golgotha and a River Jordan. Tradition says angels worked the night shift. The king who made them is a saint with a monthly day.","§4.1"],
+["A decade of Catholic Ethiopia","In 1622 the emperor converted to Catholicism under Jesuit influence; ten years of civil war later, his son restored Orthodoxy, expelled the missionaries, and sealed Ethiopia to the West for two centuries. The church's independence was defended in blood, twice over.","§4.5"],
+["The name is a doctrine","'Tewahedo' means 'made one' — the church's answer to the 5th-century question of how Christ's divinity and humanity relate. It is possibly the only church on earth whose very name is a Christological formula.","§1.1"],
+["Never say 'monophysite'","The old textbook label for the Ethiopian church is rejected as both wrong and rude: monos implies Christ's humanity was swallowed up. The church confesses mia — one united nature out of two, both fully real. Modern dialogues concluded the 1,500-year dispute was largely two vocabularies describing one faith.","§6.2"],
+["The covenant behind the devotion","Ethiopian Marian devotion runs on the Kidane Mehret — the teaching that Christ made a covenant with His mother to show mercy to those who seek her intercession. It has its own feast, the 16th of every month, and countless churches named for it.","§8.2"],
+["33 feasts for Mary","The Ethiopian year carries 33 Marian feasts, plus the 21st of every month. The most beloved fast of the year — Filseta, 15 days in August — exists so the faithful can re-enact the apostles' fast to witness her assumption.","§8.2"],
+["A prayer for every weekday","The Weddase Maryam — 'Praise of Mary' — is divided into seven portions, one per weekday, prayed through weekly by clergy and laity alike, then begun again. Children memorize it in reading school; it's bound into nearly every Ethiopian Psalter.","Ch. 17"],
+["Wisdom went home","One of Enoch's most haunting poems, complete in three verses: 'Wisdom went forth to make her dwelling among the children of men, and found no dwelling-place: Wisdom returned to her place, and took her seat among the angels.'","§19.5"],
+["The eunuch got there first","The church counts the Ethiopian eunuch of Acts 8 — baptized by Philip on the Gaza road — as its apostolic beginning: Christianity reached an Ethiopian court official within years of the Resurrection, before it reached most of Europe.","§2.4"],
+["A national epic wrote the monarchy","The Kebra Nagast — the story of Solomon, the Queen of Sheba, and their son Menelik carrying the Ark to Ethiopia — underwrote the Ethiopian crown for 700 years. Solomonic descent was written into the constitution as late as 1955.","§2.2"],
+["Bob Marley was baptized Tewahedo","Months before his death, Bob Marley was baptized into the Ethiopian Orthodox Church, taking the name Berhane Selassie — 'Light of the Trinity.' The church's Caribbean reach runs through Haile Selassie and the Rastafari movement's encounter with Ethiopia.","§14.2"],
+["The most practicing Orthodox on earth","Pew's survey data found 78% of Ethiopian Orthodox attend weekly and 87% keep the fasts — the highest observance in the Orthodox world by enormous margins (the regional median elsewhere: 27% fasting). About 197 parishes now operate in the US, nearly doubling in a decade.","§14.2"],
+["Scholar-cantors who aren't clergy","The debtera — Ethiopia's unordained church scholars — are the liturgy's musicians, poets, and scribes, trained for decades in chant and qene poetry famous for 'wax and gold': a surface meaning hiding a deeper one. Ethiopians will tell you that double-meaning is the national cast of mind.","§10.4"],
+["Drums all night — then silence","The kebero drum and sistrum thunder through the mahlet vigil all night before a feast. Then the Eucharist begins, and every instrument stops: the Qeddase itself is two hours of unaccompanied human voices. The drums only erupt again at the dismissal.","§20.1"],
+["Baptism at 40 and 80 days","Boys are baptized at 40 days old, girls at 80 — the purification periods of Leviticus 12, kept as Christian practice. On that one day the infant is baptized, chrismated, given a baptismal name and a godparent, and receives first communion.","Ch. 9"],
+["A cord worn for life","At baptism every Ethiopian Christian receives the mateb — a cord tied at the neck, usually with a cross — worn for the rest of their life as the badge of baptism. In the 15th century an emperor made it law.","§13.2"],
+["The 40th day matters most","Ethiopian memorial culture keeps the fitat (absolution of the dead) and then commemorations on set days — the 3rd, 7th, 12th, 30th, and above all the 40th — with the tazkar memorial feast feeding priests and the poor. Even grief runs on the calendar.","§13.2"],
+["Enoch's angels have parishes","Uriel, Raguel, Phanuel, Saraqael — archangels named in 1 Enoch chapter 20 and almost nowhere else — hold feast days and church dedications across Ethiopia. An emperor built the first Uriel church around 1500. Canonizing Enoch gave Ethiopia an angelology no one else has.","§19.2"],
+["The grid came from Egypt, then grew","The 30-day cycle of daily saints was translated from the Coptic Synaxarium in the late 1300s — which is why Egypt's 21st is also Mary's — then 'acclimatized': Ethiopian scribes wove in their own saints, generation by generation, until the calendar was theirs.","§8.4a"],
+["The monthly day echoes the annual","Why is every 12th Michael's day? Because his great annual feasts fall on the 12th. Why every 29th the Nativity? Because Genna is Tahsas 29. Each saint's monthly day is the echo of their principal feast — twelve quiet rehearsals and one great performance a year.","§8.4a"],
+["Eight Sundays with names","Every Sunday of Ethiopian Lent has a name from St. Yared's 6th-century Lenten hymnal — Zewerede, Qidist, Mikurab, Metsagu, Debre Zeit, Gebre Her, Niqodimos, Hosanna — and Ethiopians track the fast's progress by them the way others count shopping days.","§18.7"],
+["The Saturday that fasts","The Fetha Nagast forbids fasting on Saturdays — except one: Kedame Se'ur, 'the abrogated Sabbath,' Holy Saturday, the year's only Saturday of strict fast, when clergy go house to house ringing bells and handing out blessed reeds to announce the Resurrection is near.","§18.8"],
+["Thomas, late again","In the Assumption tradition, Thomas — late once more — meets the Virgin already ascending and receives her burial shroud as proof. In its memory, Ethiopian priests wrap their hand crosses in cloth to this day.","§18.9"],
+["A fast children ask to keep","Filseta, the 15-day August fast for Mary's assumption, is traditionally the first fast Ethiopian children keep — and many keep it eagerly, camping at churches with their families for the whole fortnight of nightly hymns and daily communion.","§18.9"],
+["Yared and the spear","Tradition says St. Yared sang before the king so raptly that the royal spear rested through his foot and drew blood — and neither noticed until the hymn ended. He is credited with the three chant modes Ethiopia still sings: one for ordinary days, one for grief, one for joy.","§10.3"],
+["Notation before Europe's","Ethiopian chant is written in melekket — interlinear signs, mostly Ge'ez letters, each recalling a melodic formula. Tradition credits Yared in the 6th century; scholars date the written system to the 16th — either way, a fully indigenous African musical notation.","§10.3"],
+["The ululation","At the moments of greatest joy in the liturgy — the Gospel, the consecration, communion — Ethiopian women raise the elelta, the high trilling ululation. Joy in the Ethiopian church is not silent.","§20.8"],
+["Priests marry; bishops don't","An Ethiopian man who wants to be a priest must marry before ordination — once, by the crowning rite. Bishops are drawn only from celibate monks. Both rules are ancient, and the parish priest with children is the norm, not the exception.","Ch. 9"],
+["The five-minister rule","An Ethiopian Eucharist canonically requires five ministers: two priests and three deacons. This is why parishes field armies of boy deacons — and why the liturgy is a choreography, never a solo.","§20.2"],
+["Three rings, one hidden center","Every Ethiopian church interior has three concentric zones modeled on the Jerusalem Temple: the outer ring for chant, the middle for communicants, and the curtained Holy of Holies where only clergy enter — with the tabot at the center no lay eye ever sees.","§12.1"],
+["Icons with two eyes — or one","Ethiopian iconography paints the righteous full-face, both eyes showing. The wicked — Judas, tormentors — appear in profile, one-eyed. Moral character is literally a matter of how much of the face you're shown.","§12.3"],
+["The courtyard congregation","At any Ethiopian liturgy there are often as many worshippers outside the church as inside — praying toward the building from the courtyard: latecomers, the unprepared, those keeping purity customs. The church's own worship guide takes it for granted.","§20.2"],
+["A liturgy at the water","On Timket, the tabots of every parish process to a body of water, camp overnight amid vigil, and the full Eucharist is celebrated outdoors at dawn beside them — the one day the whole liturgy leaves the building. UNESCO lists the festival as world heritage.","§11.2"],
+["Christmas doesn't shift; Epiphany does","After an Ethiopian leap year, most fixed feasts slide one Gregorian day — but Genna stays January 7, because the church quietly moves it to Tahsas 28 that year. Timket, unmoved, slides to January 20. A subtlety almost every website gets wrong.","§18.4"],
+["The moon is a paper moon","The church's Easter moon is a table value, not the sky's — deliberately. A uniform arithmetic any priest can run beats cloud-cover and longitude. The paper moon now runs 4–5 days behind the real one, which is a big part of why Ethiopian Easter comes later than Western.","§18.2a"],
+["70 generations, 70 shepherds, 10 weeks","Enoch structures all of history in numbers: the fallen angels bound for 70 generations, Israel's oppressors given 70 angelic 'shepherds' whose excesses a recording angel logs, and the whole of time as 10 great weeks ending in judgment — 'and after that, weeks without number for ever.'","§19.3"],
+["A bakery, a spear, a bell","Sensory map of an Ethiopian Sunday: bread-smoke from the Bethlehem bakehouse at dawn, prayer staffs knocking softly as the congregation leans through hour two, a bell at the moment the Spirit is called down, and — on a feast — the drums exploding the instant the dismissal ends.","Ch. 20"],
+["The Nine Saints were refugees","The monks who planted Ethiopian monasticism and finished the Ge'ez Bible around 480 AD were likely refugees — anti-Chalcedonian monks fleeing Byzantine persecution, welcomed in Aksum. Ethiopia's church was built, in part, by asylum seekers.","§3.4"],
+["Sunday's fast never bites","Even inside the 55-day Lent, Saturdays and Sundays lift the no-food-before-3pm rule (the vegan abstinence continues unbroken). The church fasts hard — but it will not let the Lord's Day be a hungry day.","§18.10"],
+["A church that names the year after evangelists","Every Ethiopian year belongs to an evangelist — Matthew, Mark, Luke, or John, rotating in fours. Leap years are Luke years; the current year (2018 EC) belongs to Mark. Time itself is catechized.","§18.3"]
+];
+
+/* ===== Render ===== */
+const now=new Date();
+const jdn=gregToJDN(now.getFullYear(), now.getMonth()+1, now.getDate());
+const eth=jdnToEth(jdn);
+const bh=bahireHasab(eth.y);
+const weekday=(jdn+1)%7;
+
+document.getElementById("ethdate").textContent=`${MONTHS[eth.m-1]} ${eth.d}, ${eth.y}`;
+document.getElementById("gregdate").textContent=`${WEEKDAYS[weekday]} · ${now.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})}`;
+document.getElementById("yearchip").innerHTML=`Year of <b>${bh.evangelist}</b> · Amete Mihret`;
+
+/* Fasting status */
+function fastStatus(){
+  const j=jdn;
+  const genna=ethToJDN(eth.y,4,(5500+eth.y)%4===0?28:29); // Tahsas 29; 28 in John years
+  const timket=ethToJDN(eth.y,5,11);
+  if(j>bh.fasika && j<=bh.pentecost) return ["No fasting — the 50 days of Tinsae (Eastertide)",false];
+  if(j>=bh.lentStart && j<bh.fasika){
+    if(j>=bh.hosanna) return ["Himamat — Holy Week, the strictest fast",true];
+    return ["Abiy Tsom — the Great Lent (vegan; one meal after 3pm weekdays)",true];
+  }
+  if(j>=bh.nineveh && j<bh.nineveh+3) return ["Tsome Nenewe — the Fast of Nineveh",true];
+  const fil1=ethToJDN(eth.y,12,1);
+  if(j>=fil1 && j<fil1+15) return ["Tsome Filseta — the Assumption fast (Nehase 1–15)",true];
+  const adv=ethToJDN(eth.y,3,15);
+  if(j>=adv && j<genna) return ["Tsome Nebiyat — the Advent fast of the Prophets",true];
+  if(j>bh.pentecost && j<=ethToJDN(eth.y,11,5)) return ["Tsome Hawaryat — the Apostles' fast",true];
+  if(j===genna-1 || j===timket-1) return ["Gahad — the vigil-eve fast",true];
+  if(j===genna) return ["Genna — the Nativity feast (no fasting; a Wed/Fri fast transfers to the eve)",false];
+  if(j===timket) return ["Timket — the Theophany feast (no fasting; a Wed/Fri fast transfers to the eve)",false];
+  if(weekday===3||weekday===5) return [`${WEEKDAYS[weekday]} fast (Tsome Dihnet — vegan until midday)`,true];
+  return ["Not a fasting day",false];
+}
+const [fs,isFast]=fastStatus();
+document.getElementById("fastchip").innerHTML=(isFast?"🍃 ":"🍗 ")+fs;
+
+/* Saint */
+const s=SAINTS[eth.d-1];
+document.getElementById("saintname").textContent=`${MONTHS[eth.m-1]} ${eth.d} — ${s[0]}`;
+document.getElementById("saintnote").textContent=s[1];
+
+/* Fact of the day — deterministic by date so friends see the same one */
+let factIdx=((jdn%FACTS.length)+FACTS.length)%FACTS.length;
+function renderFact(i){
+  const f=FACTS[i];
+  document.getElementById("facttitle").textContent=f[0];
+  document.getElementById("factbody").textContent=f[1];
+  document.getElementById("factref").textContent=`EOTC Handbook, ${f[2]}`;
+}
+renderFact(factIdx);
+let shuffled=factIdx;
+document.getElementById("shufflebtn").addEventListener("click",()=>{
+  shuffled=(shuffled+1+Math.floor(Math.random()*(FACTS.length-2)))%FACTS.length;
+  renderFact(shuffled);
+});
+
+/* Next feast countdown */
+function nextFeasts(){
+  const list=[];
+  for (const Y of [eth.y, eth.y+1]){
+    const b=bahireHasab(Y);
+    const gennaD=(5500+Y)%4===0?28:29;
+    list.push(
+      ["Enkutatash (New Year)", ethToJDN(Y,1,1)],
+      ["Meskel", ethToJDN(Y,1,17)],
+      ["Genna (Christmas)", ethToJDN(Y,4,gennaD)],
+      ["Timket (Epiphany)", ethToJDN(Y,5,11)],
+      ["Fasika (Easter)", b.fasika],
+      ["Filseta (Assumption)", ethToJDN(Y,12,16)]
+    );
+  }
+  return list.filter(f=>f[1]>jdn).sort((a,b)=>a[1]-b[1]).slice(0,2);
+}
+const nf=nextFeasts();
+document.getElementById("nextfeast").innerHTML="Coming up: "+nf.map(f=>{
+  const g=jdnToGreg(f[1]); const days=f[1]-jdn;
+  return `<b>${f[0]}</b> in ${days} day${days===1?"":"s"} (${new Date(g.y,g.m-1,g.d).toLocaleDateString(undefined,{month:"short",day:"numeric"})})`;
+}).join(" · ");
+
+/* Share */
+function factText(i){
+  const f=FACTS[i];
+  return `📅 ${MONTHS[eth.m-1]} ${eth.d} — ${s[0]}\n\n${f[0]}\n${f[1]}\n\n(Ethiopian Orthodox Tewahedo fact of the day · ${f[2]} of the EOTC Handbook)`;
+}
+document.getElementById("sharebtn").addEventListener("click",async()=>{
+  const text=factText(shuffled);
+  if(navigator.share){ try{ await navigator.share({text}); }catch(e){} }
+  else{
+    try{ await navigator.clipboard.writeText(text);
+      const t=document.getElementById("toast"); t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"),1600);
+    }catch(e){ alert(text); }
+  }
+});
+</script>
+</body>
+</html>
