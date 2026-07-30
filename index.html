@@ -103,7 +103,7 @@
 
   <footer>
     Dates computed on your device (Julian-day conversion + Bahire Hasab, verified against 2026–2028). Companion to the <i>Ethiopian Orthodox Tewahedo Church Handbook</i>. Saint assignments follow the common Senkessar-derived grids; parish lists vary on a few days (8, 9, 11, 22, 26). Fasting status is the canonical rule of thumb — your parish and soul-father are the authority.
-    <div id="buildstamp" style="margin-top:6px; opacity:.8;">App updated: July 29, 2026 · push-test ✓</div>
+    <div id="buildstamp" style="margin-top:6px; opacity:.8;">App updated: July 29, 2026 · fact #71 added</div>
   </footer>
 </div>
 <div class="toast" id="toast">Copied!</div>
@@ -239,7 +239,8 @@ const FACTS=[
 ["A bakery, a spear, a bell","Sensory map of an Ethiopian Sunday: bread-smoke from the Bethlehem bakehouse at dawn, prayer staffs knocking softly as the congregation leans through hour two, a bell at the moment the Spirit is called down, and — on a feast — the drums exploding the instant the dismissal ends.","Ch. 20"],
 ["The Nine Saints were refugees","The monks who planted Ethiopian monasticism and finished the Ge'ez Bible around 480 AD were likely refugees — anti-Chalcedonian monks fleeing Byzantine persecution, welcomed in Aksum. Ethiopia's church was built, in part, by asylum seekers.","§3.4"],
 ["Sunday's fast never bites","Even inside the 55-day Lent, Saturdays and Sundays lift the no-food-before-3pm rule (the vegan abstinence continues unbroken). The church fasts hard — but it will not let the Lord's Day be a hungry day.","§18.10"],
-["A church that names the year after evangelists","Every Ethiopian year belongs to an evangelist — Matthew, Mark, Luke, or John, rotating in fours. Leap years are Luke years; the current year (2018 EC) belongs to Mark. Time itself is catechized.","§18.3"]
+["A church that names the year after evangelists","Every Ethiopian year belongs to an evangelist — Matthew, Mark, Luke, or John, rotating in fours. Leap years are Luke years; the current year (2018 EC) belongs to Mark. Time itself is catechized.","§18.3"],
+["Sixteen centuries of foreign bishops","From Frumentius in the 340s until the modern era, the head of the Ethiopian church — the Abun — was an Egyptian monk chosen and sent by the Coptic Patriarch of Alexandria: usually one foreign bishop for an entire empire, and Ethiopia had no vote. Only in 1951 did an Ethiopian, Abuna Basilios, take the office, and in 1959 he was enthroned as the church's first Patriarch — sixteen centuries after the church began."]
 ];
 
 /* ===== Render ===== */
@@ -289,7 +290,7 @@ function renderFact(i){
   const f=FACTS[i];
   document.getElementById("facttitle").textContent=f[0];
   document.getElementById("factbody").textContent=f[1];
-  document.getElementById("factref").textContent=`EOTC Handbook, ${f[2]}`;
+  document.getElementById("factref").textContent=f[2]?`EOTC Handbook, ${f[2]}`:"";
 }
 renderFact(factIdx);
 let shuffled=factIdx;
@@ -324,7 +325,7 @@ document.getElementById("nextfeast").innerHTML="Coming up: "+nf.map(f=>{
 /* Share */
 function factText(i){
   const f=FACTS[i];
-  return `📅 ${MONTHS[eth.m-1]} ${eth.d} — ${s[0]}\n\n${f[0]}\n${f[1]}\n\n(Ethiopian Orthodox Tewahedo fact of the day · ${f[2]} of the EOTC Handbook)`;
+  return `📅 ${MONTHS[eth.m-1]} ${eth.d} — ${s[0]}\n\n${f[0]}\n${f[1]}\n\n(Ethiopian Orthodox Tewahedo fact of the day${f[2]?` · ${f[2]} of the EOTC Handbook`:""})`;
 }
 document.getElementById("sharebtn").addEventListener("click",async()=>{
   const text=factText(shuffled);
