@@ -103,7 +103,7 @@
 
   <footer>
     Dates computed on your device (Julian-day conversion + Bahire Hasab, verified against 2026–2028). Companion to the <i>Ethiopian Orthodox Tewahedo Church Handbook</i>. Saint assignments follow the common Senkessar-derived grids; parish lists vary on a few days (8, 9, 11, 22, 26). Fasting status is the canonical rule of thumb — your parish and soul-father are the authority.
-    <div id="buildstamp" style="margin-top:6px; opacity:.8;">App updated: July 30, 2026 · fact #73 added</div>
+    <div id="buildstamp" style="margin-top:6px; opacity:.8;">App updated: July 31, 2026 · fasting wording refined</div>
   </footer>
 </div>
 <div class="toast" id="toast">Copied!</div>
@@ -275,7 +275,7 @@ function fastStatus(){
   if(j===genna-1 || j===timket-1) return ["Gahad — the vigil-eve fast",true];
   if(j===genna) return ["Genna — the Nativity feast (no fasting; a Wed/Fri fast transfers to the eve)",false];
   if(j===timket) return ["Timket — the Theophany feast (no fasting; a Wed/Fri fast transfers to the eve)",false];
-  if(weekday===3||weekday===5) return [`${WEEKDAYS[weekday]} fast (Tsome Dihnet — vegan until midday)`,true];
+  if(weekday===3||weekday===5) return [`${WEEKDAYS[weekday]} — Tsome Dihnet: no food till midday (3pm for the strict); fasting food only all day`,true];
   return ["Not a fasting day",false];
 }
 const [fs,isFast]=fastStatus();
