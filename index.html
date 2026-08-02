@@ -54,6 +54,36 @@
   button:active{transform:scale(.98);}
   .nextfeast{font-size:.92rem; text-align:center; color:var(--muted);}
   .nextfeast b{color:var(--ink);}
+  /* ===== Fasting calendar ===== */
+  :root{
+    --c-lent:#a03d2e; --c-himamat:#7a1f1f; --c-nineveh:#6d4b8f; --c-filseta:#3f6fa8;
+    --c-advent:#2e7d72; --c-apostles:#7d7a2e; --c-wedfri:#c07a3a; --c-gahad:#8a6a4a; --c-tinsae:#dfe9d8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --c-lent:#b1503e; --c-himamat:#9c2e2e; --c-nineveh:#8a64b4; --c-filseta:#5c8cc8;
+      --c-advent:#3f9a8c; --c-apostles:#9a973f; --c-wedfri:#c88a4a; --c-gahad:#a07a4f; --c-tinsae:#2c3a28; }
+  }
+  .calhead{display:flex; align-items:center; justify-content:space-between; gap:6px;}
+  .calhead button{flex:none; padding:6px 12px; font-size:.95rem; line-height:1;}
+  .callabel{text-align:center; flex:1;}
+  .callabel .g{font-weight:bold; font-size:1.02rem;}
+  .callabel .e{color:var(--muted); font-size:.76rem;}
+  .calyear{margin-top:10px; display:flex; gap:8px; align-items:center; justify-content:center; font-size:.85rem; color:var(--muted); flex-wrap:wrap;}
+  .calyear select{font-family:inherit; font-size:.9rem; padding:5px 8px; border-radius:8px;
+    background:var(--chip); color:var(--ink); border:1px solid var(--line);}
+  .calgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:10px;}
+  .dow{text-align:center; font-size:.66rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; padding-bottom:2px;}
+  .day{position:relative; aspect-ratio:1; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    font-size:.86rem; border:1px solid transparent; color:var(--ink);}
+  .day.out{opacity:.2;}
+  .day.fastday{color:#fff; font-weight:600;}
+  .day.tinsaeday{color:var(--ink);}
+  .day.today{outline:2px solid var(--accent2); outline-offset:1px; font-weight:bold;}
+  .day .fdot{position:absolute; bottom:3px; left:50%; transform:translateX(-50%);
+    width:5px; height:5px; border-radius:50%; background:var(--accent2);}
+  .legend{display:flex; flex-wrap:wrap; gap:5px 12px; margin-top:12px; font-size:.73rem; color:var(--muted); justify-content:center;}
+  .legend span{display:flex; align-items:center; gap:4px;}
+  .sw{width:10px; height:10px; border-radius:3px; display:inline-block;}
   footer{margin-top:16px; text-align:center; font-size:.75rem; color:var(--muted); max-width:560px;}
   footer a{color:var(--muted);}
   .toast{
@@ -101,9 +131,35 @@
 
   <div class="card nextfeast" id="nextfeast"></div>
 
+  <div class="card">
+    <div class="label">Fasting calendar</div>
+    <div class="calhead">
+      <button id="calprev" aria-label="Previous month">‹</button>
+      <div class="callabel"><div class="g" id="callabelg"></div><div class="e" id="callabele"></div></div>
+      <button id="calnext" aria-label="Next month">›</button>
+    </div>
+    <div class="calgrid" id="calgrid"></div>
+    <div class="calyear">
+      <button id="caltoday">Today · 30 days</button>
+      <label>Jump to year: <select id="calyearsel"></select></label>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--c-lent)"></i>Great Lent</span>
+      <span><i class="sw" style="background:var(--c-himamat)"></i>Holy Week</span>
+      <span><i class="sw" style="background:var(--c-nineveh)"></i>Nineveh</span>
+      <span><i class="sw" style="background:var(--c-filseta)"></i>Filseta</span>
+      <span><i class="sw" style="background:var(--c-advent)"></i>Advent</span>
+      <span><i class="sw" style="background:var(--c-apostles)"></i>Apostles</span>
+      <span><i class="sw" style="background:var(--c-wedfri)"></i>Wed/Fri</span>
+      <span><i class="sw" style="background:var(--c-gahad)"></i>Gahad eve</span>
+      <span><i class="sw" style="background:var(--c-tinsae); border:1px solid var(--line)"></i>Tinsae (no fasting)</span>
+      <span><i class="sw" style="background:var(--accent2); border-radius:50%"></i>Major feast</span>
+    </div>
+  </div>
+
   <footer>
     Dates computed on your device (Julian-day conversion + Bahire Hasab, verified against 2026–2028). Companion to the <i>Ethiopian Orthodox Tewahedo Church Handbook</i>. Saint assignments follow the common Senkessar-derived grids; parish lists vary on a few days (8, 9, 11, 22, 26). Fasting status is the canonical rule of thumb — your parish and soul-father are the authority.
-    <div id="buildstamp" style="margin-top:6px; opacity:.8;">App updated: August 1, 2026 · fact #75 added</div>
+    <div id="buildstamp" style="margin-top:6px; opacity:.8;">App updated: July 31, 2026 · fasting wording refined</div>
   </footer>
 </div>
 <div class="toast" id="toast">Copied!</div>
@@ -242,9 +298,7 @@ const FACTS=[
 ["A church that names the year after evangelists","Every Ethiopian year belongs to an evangelist — Matthew, Mark, Luke, or John, rotating in fours. Leap years are Luke years; the current year (2018 EC) belongs to Mark. Time itself is catechized.","§18.3"],
 ["Sixteen centuries of foreign bishops","From Frumentius in the 340s until the modern era, the head of the Ethiopian church — the Abun — was an Egyptian monk chosen and sent by the Coptic Patriarch of Alexandria: usually one foreign bishop for an entire empire, and Ethiopia had no vote. Only in 1951 did an Ethiopian, Abuna Basilios, take the office, and in 1959 he was enthroned as the church's first Patriarch — sixteen centuries after the church began."],
 ["The bonfire that finds the Cross","On Meskel eve each September, Ethiopians raise the Demera — a towering cone of branches crowned with yellow Meskel daisies — and set it ablaze, re-enacting the smoke that tradition says guided Empress Helena to the buried True Cross in Jerusalem. Crowds watch which way the smoke drifts and the burning pole falls: signs, they say, of the year ahead. UNESCO added the festival to its world heritage list in 2013."],
-["The monastery islands of Lake Tana","Lake Tana, the source of the Blue Nile, is dotted with centuries-old island monasteries — several, like Daga Estifanos with its mummified emperors, still closed to women to this day. Tradition holds that the Ark of the Covenant lay hidden on the island of Tana Qirqos for 800 years before it was carried to Aksum — making the quiet lake a station on the Ark's Ethiopian journey."],
-["The alphabet that turned around","Ge'ez, the church's sacred tongue, is a Semitic sister of Hebrew and Arabic — yet it is written left to right, opposite its whole family. The script reversed direction and gained its vowel marks in the 4th century, the very generation Ethiopia became Christian; centuries after it faded from daily speech, every liturgy is still sung in it."],
-["The saint who stood until a leg gave way","Ethiopia's most beloved native saint, Abune Tekle Haymanot — founder of the great monastery of Debre Libanos — prayed standing, tradition says for decades, until one leg broke away; he then kept vigil on the remaining leg for seven more years. Icons show him one-legged and six-winged: the wings, the story goes, were God's gift the moment Satan cut his climbing rope. He holds the 24th of every month."]
+["The monastery islands of Lake Tana","Lake Tana, the source of the Blue Nile, is dotted with centuries-old island monasteries — several, like Daga Estifanos with its mummified emperors, still closed to women to this day. Tradition holds that the Ark of the Covenant lay hidden on the island of Tana Qirqos for 800 years before it was carried to Aksum — making the quiet lake a station on the Ark's Ethiopian journey."]
 ];
 
 /* ===== Render ===== */
@@ -258,30 +312,36 @@ document.getElementById("ethdate").textContent=`${MONTHS[eth.m-1]} ${eth.d}, ${e
 document.getElementById("gregdate").textContent=`${WEEKDAYS[weekday]} · ${now.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})}`;
 document.getElementById("yearchip").innerHTML=`Year of <b>${bh.evangelist}</b> · Amete Mihret`;
 
-/* Fasting status */
-function fastStatus(){
-  const j=jdn;
-  const genna=ethToJDN(eth.y,4,(5500+eth.y)%4===0?28:29); // Tahsas 29; 28 in John years
-  const timket=ethToJDN(eth.y,5,11);
-  if(j>bh.fasika && j<=bh.pentecost) return ["No fasting — the 50 days of Tinsae (Eastertide)",false];
-  if(j>=bh.lentStart && j<bh.fasika){
-    if(j>=bh.hosanna) return ["Himamat — Holy Week, the strictest fast",true];
-    return ["Abiy Tsom — the Great Lent (vegan; one meal after 3pm weekdays)",true];
+/* Fasting status — generalized so any date in any year can be classified */
+const _bhCache={};
+function bhOf(Y){ return _bhCache[Y] || (_bhCache[Y]=bahireHasab(Y)); }
+function classifyDay(j){
+  const e=jdnToEth(j), Y=e.y, wd=(j+1)%7, b=bhOf(Y);
+  const genna=ethToJDN(Y,4,(5500+Y)%4===0?28:29); // Tahsas 29; 28 in John years
+  const timket=ethToJDN(Y,5,11);
+  const fil1=ethToJDN(Y,12,1), adv=ethToJDN(Y,3,15);
+  const FE={};
+  FE[ethToJDN(Y,1,1)]="Enkutatash"; FE[ethToJDN(Y,1,17)]="Meskel"; FE[genna]="Genna";
+  FE[timket]="Timket"; FE[b.fasika]="Fasika"; FE[ethToJDN(Y,12,16)]="Filseta (Assumption)";
+  const feast=FE[j]||null;
+  let type="none", label="Not a fasting day";
+  if(j>b.fasika && j<=b.pentecost){type="tinsae"; label="Tinsae — the 50 feast days, no fasting";}
+  else if(j>=b.lentStart && j<b.fasika){
+    if(j>=b.hosanna){type="himamat"; label="Himamat — Holy Week, the strictest fast";}
+    else {type="lent"; label="Abiy Tsom — the Great Lent (vegan; one meal after 3pm weekdays)";}
   }
-  if(j>=bh.nineveh && j<bh.nineveh+3) return ["Tsome Nenewe — the Fast of Nineveh",true];
-  const fil1=ethToJDN(eth.y,12,1);
-  if(j>=fil1 && j<fil1+15) return ["Tsome Filseta — the Assumption fast (Nehase 1–15)",true];
-  const adv=ethToJDN(eth.y,3,15);
-  if(j>=adv && j<genna) return ["Tsome Nebiyat — the Advent fast of the Prophets",true];
-  if(j>bh.pentecost && j<=ethToJDN(eth.y,11,5)) return ["Tsome Hawaryat — the Apostles' fast",true];
-  if(j===genna-1 || j===timket-1) return ["Gahad — the vigil-eve fast",true];
-  if(j===genna) return ["Genna — the Nativity feast (no fasting; a Wed/Fri fast transfers to the eve)",false];
-  if(j===timket) return ["Timket — the Theophany feast (no fasting; a Wed/Fri fast transfers to the eve)",false];
-  if(weekday===3||weekday===5) return [`${WEEKDAYS[weekday]} — Tsome Dihnet: no food till midday (3pm for the strict); fasting food only all day`,true];
-  return ["Not a fasting day",false];
+  else if(j>=b.nineveh && j<b.nineveh+3){type="nineveh"; label="Tsome Nenewe — the Fast of Nineveh";}
+  else if(j>=fil1 && j<fil1+15){type="filseta"; label="Tsome Filseta — the Assumption fast (Nehase 1–15)";}
+  else if(j>=adv && j<genna){type="advent"; label="Tsome Nebiyat — the Advent fast of the Prophets";}
+  else if(j>b.pentecost && j<=ethToJDN(Y,11,5)){type="apostles"; label="Tsome Hawaryat — the Apostles' fast";}
+  else if(j===genna-1 || j===timket-1){type="gahad"; label="Gahad — the vigil-eve fast";}
+  else if(j===genna || j===timket){type="none"; label=feast+" — feast day (a Wed/Fri fast transfers to the eve)";}
+  else if(wd===3||wd===5){type="wedfri"; const weekday=wd; label=`${WEEKDAYS[weekday]} — Tsome Dihnet: no food till midday (3pm for the strict); fasting food only all day`;}
+  const isFast=["lent","himamat","nineveh","filseta","advent","apostles","gahad","wedfri"].indexOf(type)>=0;
+  return {type,label,feast,isFast};
 }
-const [fs,isFast]=fastStatus();
-document.getElementById("fastchip").innerHTML=(isFast?"🍃 ":"🍗 ")+fs;
+const todayC=classifyDay(jdn);
+document.getElementById("fastchip").innerHTML=(todayC.isFast?"🍃 ":"🍗 ")+todayC.label+(todayC.feast?" · ✨ "+todayC.feast:"");
 
 /* Saint */
 const s=SAINTS[eth.d-1];
@@ -325,6 +385,67 @@ document.getElementById("nextfeast").innerHTML="Coming up: "+nf.map(f=>{
   const g=jdnToGreg(f[1]); const days=f[1]-jdn;
   return `<b>${f[0]}</b> in ${days} day${days===1?"":"s"} (${new Date(g.y,g.m-1,g.d).toLocaleDateString(undefined,{month:"short",day:"numeric"})})`;
 }).join(" · ");
+
+/* ===== Fasting calendar (rolling 30 days; month nav; 50-year jump) ===== */
+const GMON=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const CAL_MIN=now.getFullYear(), CAL_MAX=CAL_MIN+50;
+const cal={mode:"roll", y:now.getFullYear(), m:now.getMonth()+1};
+function calRender(){
+  let startJ, endJ;
+  if(cal.mode==="roll"){ startJ=jdn; endJ=jdn+29; }
+  else{
+    startJ=gregToJDN(cal.y,cal.m,1);
+    endJ=(cal.m===12?gregToJDN(cal.y+1,1,1):gregToJDN(cal.y,cal.m+1,1))-1;
+  }
+  const gridStart=startJ-((startJ+1)%7); // back to Sunday
+  const rows=Math.ceil((endJ-gridStart+1)/7);
+  let html=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=>`<div class="dow">${d}</div>`).join("");
+  for(let j=gridStart;j<gridStart+rows*7;j++){
+    const g=jdnToGreg(j), c=classifyDay(j), inWin=(j>=startJ&&j<=endJ);
+    let cls="day", style="";
+    if(!inWin) cls+=" out";
+    if(c.type==="tinsae"){cls+=" tinsaeday"; style="background:var(--c-tinsae)";}
+    else if(c.isFast){cls+=" fastday"; style=`background:var(--c-${c.type})`;}
+    if(j===jdn) cls+=" today";
+    const tip=`${GMON[g.m-1]} ${g.d}, ${g.y} — ${c.label}${c.feast?" · "+c.feast:""}`;
+    html+=`<div class="${cls}" style="${style}" title="${tip}">${g.d}${c.feast?'<span class="fdot"></span>':""}</div>`;
+  }
+  document.getElementById("calgrid").innerHTML=html;
+  const sg=jdnToGreg(startJ), eg=jdnToGreg(endJ), se=jdnToEth(startJ), ee=jdnToEth(endJ);
+  document.getElementById("callabelg").textContent = cal.mode==="roll"
+    ? (sg.m===eg.m?`${GMON[sg.m-1]} ${sg.y}`:`${GMON[sg.m-1]} – ${GMON[eg.m-1]} ${eg.y}`)+" · next 30 days"
+    : `${GMON[cal.m-1]} ${cal.y}`;
+  document.getElementById("callabele").textContent = (se.m===ee.m&&se.y===ee.y)
+    ? `${MONTHS[se.m-1]} ${se.y} EC` : `${MONTHS[se.m-1]} ${se.y} – ${MONTHS[ee.m-1]} ${ee.y} EC`;
+}
+function calShift(d){
+  if(cal.mode==="roll"){cal.mode="month"; cal.y=now.getFullYear(); cal.m=now.getMonth()+1;}
+  cal.m+=d;
+  if(cal.m<1){cal.m=12;cal.y--;}
+  if(cal.m>12){cal.m=1;cal.y++;}
+  if(cal.y<CAL_MIN){cal.y=CAL_MIN;cal.m=1;}
+  if(cal.y>CAL_MAX){cal.y=CAL_MAX;cal.m=12;}
+  document.getElementById("calyearsel").value=String(cal.y);
+  calRender();
+}
+document.getElementById("calprev").addEventListener("click",()=>calShift(-1));
+document.getElementById("calnext").addEventListener("click",()=>calShift(1));
+document.getElementById("caltoday").addEventListener("click",()=>{
+  cal.mode="roll"; cal.y=now.getFullYear(); cal.m=now.getMonth()+1;
+  document.getElementById("calyearsel").value=String(now.getFullYear());
+  calRender();
+});
+(function(){
+  const sel=document.getElementById("calyearsel");
+  let opts=""; for(let y=CAL_MIN;y<=CAL_MAX;y++) opts+=`<option value="${y}">${y}</option>`;
+  sel.innerHTML=opts; sel.value=String(now.getFullYear());
+  sel.addEventListener("change",()=>{
+    cal.mode="month"; cal.y=parseInt(sel.value,10);
+    cal.m=(cal.y===now.getFullYear())?(now.getMonth()+1):1;
+    calRender();
+  });
+})();
+calRender();
 
 /* Share */
 function factText(i){
