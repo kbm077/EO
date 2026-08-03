@@ -134,7 +134,7 @@ footer a{color:var(--muted)}
   </div>
 
   <div class="card" id="zewetir">
-    <div class="label">ጸሎት ዘዘወትር · The Daily Prayer — recited at every hour</div>
+    <div class="label">ጸሎት ዘዘወትር · The Daily Prayer — the fixed prayer kept at the prayer hours</div>
     <div class="tabs" id="ztabs">
       <button class="tab" data-z="am" onclick="setZLang('am')">አማርኛ</button>
       <button class="tab" data-z="gz" onclick="setZLang('gz')">ግዕዝ</button>
@@ -165,9 +165,9 @@ footer a{color:var(--muted)}
   </div>
 
   <footer>
-    English text of the Weddase Maryam: E. A. W. Budge (1922, public domain). Ge&#39;ez and Amharic: the traditional church text as circulated in EOTC prayer books. Hour commemorations follow common EOTC catechesis (Mahibere Kidusan and parish sources); small variations exist between traditions — your parish and soul-father are the authority. Sister apps:
+    English text of the Weddase Maryam: E. A. W. Budge, <i>Legends of Our Lady Mary</i> (1922, public domain), from the church-circulated retype with obvious typographical slips corrected against sense. Ge&#39;ez and Amharic: the traditional church text as circulated in EOTC prayer books. Hour commemorations follow common EOTC catechesis and parish teaching (they are not codified in the Handbook); small variations exist between traditions — your parish and soul-father are the authority. Sister apps:
     <a href="https://kbm077.github.io/EO/">Fact of the Day</a> · <a href="https://kbm077.github.io/EOHandbook/">The Handbook</a>
-    <div id="buildstamp" style="margin-top:6px;opacity:.8">Site built: July 30, 2026 · v1.2 (Zewetir Tselot in Amharic · Ge'ez · English + hourly recitation sequences)</div>
+    <div id="buildstamp" style="margin-top:6px;opacity:.8">App updated: August 3, 2026 · v1.4 — source-fidelity audit: framing text re-verified against the Handbook; the fast-day rubric and "About this day" now show on every tab; phonetic tabs (v1.3)</div>
   </footer>
 </div>
 <div class="toast" id="toast">Link copied!</div>
@@ -261,14 +261,14 @@ const HOURS=[
   memo:"Christ yields up His holy soul; the hour Cornelius's prayer was answered.",
   pray:"The Lord's Prayer and the hour's remembrance of His death."},
  {from:16.5,to:19.5, time:"~6 pm", eth:"11–12 ሰዓት", nm:"ጸሎተ ሰርክ", tr:"Tselote Serk — evening / vespers",
-  memo:"The burial of Christ; \"let my prayer be set forth as the evening sacrifice\" (Ps 140/141).",
+  memo:"The burial of Christ; \"let my prayer be set forth before Thee as incense; and the lifting up of my hands as the evening sacrifice\" (Ps 141:2).",
   pray:"Evening prayer — and the evening Weddase Maryam; ideally at church."},
  {from:19.5,to:23, time:"~9 pm", eth:"3 ሰዓት የሌሊት", nm:"ጸሎተ ንዋም", tr:"Tselote Newam — before sleep",
   memo:"Gethsemane: Christ's prayer and His arrest; entrusting yourself to God for the night.",
   pray:"The Lord's Prayer, the Creed, Psalm 50 — then commend yourself to God and sleep."},
  {from:23,to:4, time:"Midnight", eth:"6 ሰዓት የሌሊት", nm:"መንፈቀ ሌሊት", tr:"Menfeqe Lelit — the middle of the night",
   memo:"The Resurrection from the sealed tomb; His Nativity and Baptism; the watch for the Second Coming.",
-  pray:"The vigil hour — psalms and watchful prayer. The heart of the monastic Sä'atat."}
+  pray:"The vigil hour — psalms and watchful prayer; tradition counts it the most important of the seven. The heart of the Sa'atat."}
 ];
 
 const PRAYERS=[
@@ -291,7 +291,7 @@ const PRAYERS=[
   et:"ቅዱስ እግዚአብሔር፣ ቅዱስ ኃያል፣ ቅዱስ ሕያው ዘኢይመውት፣ ተሣሃለነ እግዚኦ።",
   tr:"Qeddus Egziabher, Qeddus Khayal, Qeddus Heyaw ze-i-yemewet, tesahalene Egzio",
   eng:"Holy God, Holy Mighty, Holy Living and Immortal One, have mercy on us, O Lord.",
-  src:"Traditional — the fuller liturgical form adds \"…who wast born of the Virgin… crucified… risen…\""},
+  src:"Traditional — the fuller liturgical form adds \"…who was born from the Holy Virgin Mary… who was baptized in the Jordan and crucified on the tree of the cross… who rose from the dead on the third day, ascended into heaven in glory…\" (Nativity, Baptism, Cross, Resurrection)"},
  {ti:"ጸሎተ ሃይማኖት", en:"The Creed — opening",
   et:"ሁሉን በያዘ፣ ሰማይንና ምድርን፣ የሚታየውንና የማይታየውን በፈጠረ በአንድ አምላክ በእግዚአብሔር አብ እናምናለን።",
   tr:"Ge'ez incipit: ነአምን በአሐዱ አምላክ…",
@@ -311,10 +311,10 @@ document.getElementById('gregdate').textContent=DAY_AM[todayKey]+' · '+now.toLo
 const ZEWETIR=[
  {t:"የመስቀል ምልክት · The sign of the Cross",
   gz:"አዐትብ ገጽየ ወኩለንታየ በትእምርተ መስቀል።",
-  en:"I sign my face and my whole being with the sign of the Cross."},
+  en:"I sign my face and my whole being with the sign of the Cross — in the Amharic, with the sign of the Cross of my Lord Jesus Christ, three times."},
  {t:"በስመ አብ · The opening and renunciation",
   gz:"በስመ አብ ወወልድ ወመንፈስ ቅዱስ አሓዱ አምላክ። በቅድስት ሥላሴ እንዘ አአምን ወእትመኅፀን እክሕደከ ሰይጣን በቅድመ ዛቲ እምየ ቅድስት ቤተ ክርስትያን እንተ ይእቲ ስምዕየ ማርያም ጽዮን ለዓለም ዓለም።",
-  en:"In the name of the Father and of the Son and of the Holy Spirit, one God. Believing in the Holy Trinity and taking refuge in her, I renounce thee, Satan, before this my mother the holy Church, who is my witness — Mary, Zion — for ever and ever."},
+  en:"In the name of the Father and of the Son and of the Holy Spirit, one God. Believing in the Holy Trinity, I renounce thee, Satan, before this my mother the holy Church, who is my witness — Mary, Zion — and in her I take refuge, for ever and ever."},
  {t:"ነአኩተከ · The thanksgiving",
   gz:"ነአኩተከ እግዚኦ ወንሴብሐከ ንባርከከ እግዚኦ ወንትአመነከ ንስእለከ እግዚኦ ወናስተበቍዓከ። ንገኒ ለከ እግዚኦ ወንትቀነይ ለስምከ ቅዱስ። ንሰግድ ለከ ኦ ዘለከ ይሰግድ ኩሉ ብርክ ወለከ ይትቀነይ ኩሉ ልሳን። አንተ ውእቱ አምላከ አማልክት ወእግዚአ አጋእዝት ወንጉሠ ነገሥት አምላክ አንተ ለኩሉ ዘሥጋ ወለኩሉ ዘነፍስ ወንጼውዓከ በከመ መሃረነ ቅዱስ ወልድከ እንዘ ይብል አንትሙሰ ሶበ ትጼልዩ ከመዝ በሉ።",
   en:"We give thanks unto Thee, O Lord, and we praise Thee; we bless Thee, O Lord, and we put our trust in Thee; we beseech Thee, O Lord, and make supplication unto Thee. We bow before Thee, O Thou to whom every knee bows and whom every tongue serves. Thou art the God of gods and Lord of lords and King of kings, the God of all flesh and of every soul. We call upon Thee as Thy holy Son taught us, saying: when ye pray, pray thus —"},
@@ -381,9 +381,10 @@ const nowIdx=hourIndex();
 const hl=document.getElementById('hourlist');
 function seqHTML(i){
   const R=REM[i];
-  let s='<div class="seq"><div class="seqlabel">የምትደግመው ጸሎት · Recite, in order:</div>';
+  let s='<div class="seq"><div class="seqlabel">የምትደግመው ጸሎት · A common order of recitation:</div>'+
+     '<div class="steptxt" style="opacity:.75;margin:-2px 0 8px">Parish practice varies, and the rubrical order within the Sa\'atat is not settled in print — your soul-father is the authority.</div>';
   s+='<div class="step"><b>1 · ጸሎት ዘዘወትር — the Daily Prayer</b><div class="steptxt">The full fixed prayer, from the sign of the Cross through the Magnificat. '+
-     '<a href="#zewetir" onclick="event.stopPropagation()">Open it below ↓</a> — recite it all; it is the body of every hour.</div></div>';
+     '<a href="#zewetir" onclick="event.stopPropagation()">Open it below ↓</a> — recite as much of it as your practice keeps.</div></div>';
   s+='<div class="step"><b>2 · መዝሙረ ዳዊት ፶ — Psalm 50</b><div class="steptxt am">'+PRAYERS[2].et+'</div>'+
      '<div class="steptxt">'+PRAYERS[2].eng+' <i>(continue the whole psalm if you know it)</i></div></div>';
   s+='<div class="step"><b>3 · የሰዓቱ መታሰቢያ — the remembrance of this hour</b>'+
@@ -446,16 +447,16 @@ function renderW(){
   document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('on',p.dataset.d===curDay));
   document.querySelectorAll('.tab[data-lang]').forEach(t=>t.classList.toggle('on',t.dataset.lang===curLang));
   const el=document.getElementById('wcontent');
-  let html='';
+  let html='', verses='';
   if(curLang==='gz'){
     const D=W.geez[curDay];
     html+='<div class="wheader">'+esc(D.header)+'</div>';
-    D.verses.forEach((v,i)=>{html+='<div class="verse"><span class="n">'+(i+1)+'</span>'+
+    D.verses.forEach((v,i)=>{verses+='<div class="verse"><span class="n">'+(i+1)+'</span>'+
       esc(v).replace(/ሰአሊ ለነ ቅድስት።?\s*$/,'<span class="refrain">ሰአሊ ለነ ቅድስት።</span>')+'</div>';});
   }else if(curLang==='am'){
     const D=W.amharic[curDay];
     html+='<div class="wheader">'+DAY_GZ[curDay]+' — '+DAY_AM[curDay]+' የሚጸለይ ውዳሴ ማርያም</div>';
-    D.verses.forEach((v,i)=>{html+='<div class="verse"><span class="n">'+(i+1)+'</span>'+
+    D.verses.forEach((v,i)=>{verses+='<div class="verse"><span class="n">'+(i+1)+'</span>'+
       esc(v).replace(/ቅድስት ሆይ ለምኝልን።?\s*$/,'<span class="refrain">ቅድስት ሆይ ለምኝልን።</span>')+'</div>';});
   }else if(curLang==='ph'){
     const D=W.amharic[curDay];
@@ -466,16 +467,22 @@ function renderW(){
       let t=esc(translit(v));
       const rx=new RegExp(refT.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*$');
       if(rx.test(t)) t=t.replace(rx,'<span class="refrain">'+refT+'</span>');
-      html+='<div class="verse phv"><span class="n">'+(i+1)+'</span>'+t+'</div>';
+      verses+='<div class="verse phv"><span class="n">'+(i+1)+'</span>'+t+'</div>';
     });
   }else{
     const D=W.english[curDay];
     html+='<div class="wheader" style="font-family:Georgia,serif">'+esc(D.title)+'</div>';
-    if(D.theme) html+='<details class="theme"><summary>About this day</summary><div style="margin-top:6px">'+esc(D.theme).replace(/\*\*/g,'')+'</div></details>';
-    D.verses.forEach((v,i)=>{html+='<div class="verse" style="font-family:Georgia,serif;font-size:.97rem"><span class="n">'+(i+1)+'</span>'+
+    D.verses.forEach((v,i)=>{verses+='<div class="verse" style="font-family:Georgia,serif;font-size:.97rem"><span class="n">'+(i+1)+'</span>'+
       esc(v).replace(/\*(.*?)\*/g,'<i class="refrain">$1</i>').replace(/\*\*/g,'')+'</div>';});
-    if(D.rubric) html+='<div class="rubric">Rubric: '+esc(D.rubric)+'</div>';
   }
+  /* Theme and rubric are language-independent: the fast-day rubric changes what is
+     said on Wednesdays, Fridays and through Lent, so it must not be hidden behind
+     the English tab. Markdown emphasis from the Handbook is rendered, not stripped. */
+  const E=W.english[curDay];
+  if(E&&E.theme) html+='<details class="theme"><summary>About this day</summary><div style="margin-top:6px">'+
+    esc(E.theme).replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\*(.*?)\*/g,'<i>$1</i>')+'</div></details>';
+  html+=verses;
+  if(E&&E.rubric) html+='<div class="rubric">Rubric: '+esc(E.rubric)+'</div>';
   el.innerHTML=html;
 }
 function setLang(l){curLang=l; renderW();}
