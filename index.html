@@ -110,7 +110,7 @@
   .wkg{font-size:.8rem; font-weight:600;}
   .wkname{font-size:.88rem; font-weight:600; line-height:1.25;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
-  .wketh{font-size:.72rem; color:var(--muted);}
+  .wketh{font-size:.72rem; color:var(--muted); display:block; margin-top:1px;}
   .wkfast{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .wkfeast{color:var(--accent2);}
   .legend{display:flex; flex-wrap:wrap; gap:5px 12px; margin-top:12px; font-size:.73rem; color:var(--muted); justify-content:center;}
@@ -725,7 +725,7 @@ function renderWeek(from){
     html+=`<button class="wkrow${j===viewJ?" on":""}" data-j="${j}">`+
       `<span><span class="wkd">${gLabel(j,{weekday:"short"})}</span><br>`+
       `<span class="wkg">${gLabel(j,{month:"short",day:"numeric"})}</span></span>`+
-      `<span><span class="wkname">${sf.name}</span><br>`+
+      `<span><span class="wkname">${sf.name}</span>`+
       `<span class="wketh">${sf.dateLabel}${c.feast?' · <b class="wkfeast">'+c.feast+'</b>':""}</span></span>`+
       dot+`</button>`;
   }
