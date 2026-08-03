@@ -80,14 +80,39 @@
     background:var(--chip); color:var(--ink); border:1px solid var(--line);}
   .calgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:10px;}
   .dow{text-align:center; font-size:.66rem; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; padding-bottom:2px;}
-  .day{position:relative; aspect-ratio:1; border-radius:9px; display:flex; align-items:center; justify-content:center;
-    font-size:.86rem; border:1px solid transparent; color:var(--ink);}
+  .day{position:relative; aspect-ratio:1; border-radius:9px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; line-height:1.05; gap:1px;
+    font-size:.86rem; border:1px solid transparent; color:var(--ink);
+    font-family:inherit; background:none; padding:0; cursor:pointer;}
+  .day .dg{font-size:.86rem;}
+  .day .de{font-size:.58rem; opacity:.68;}
+  .day.fastday .de{opacity:.85;}
+  .day.viewing{border-color:var(--accent); border-width:2px;}
   .day.out{opacity:.2;}
   .day.fastday{color:#fff; font-weight:600;}
   .day.tinsaeday{color:var(--ink);}
   .day.today{outline:2px solid var(--accent2); outline-offset:1px; font-weight:bold;}
   .day .fdot{position:absolute; bottom:3px; left:50%; transform:translateX(-50%);
     width:5px; height:5px; border-radius:50%; background:var(--accent2);}
+  /* commemoration stepper + week strip */
+  .comhead{display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px;}
+  .comhead button{flex:none; padding:5px 12px; font-size:1rem; line-height:1; background:var(--chip);}
+  .comhead .label{margin:0; flex:1; text-align:center;}
+  .todaybtn{display:block; margin:12px auto 0; max-width:190px; font-size:.8rem; padding:7px 10px;}
+  .wk{margin-top:14px; border-top:1px solid var(--line); padding-top:6px;}
+  .wkhead{font-size:.68rem; text-transform:uppercase; letter-spacing:.18em; color:var(--muted); margin:4px 2px 6px;}
+  .wkrow{display:grid; grid-template-columns:54px 1fr 12px; gap:10px; align-items:center;
+    padding:7px 8px; border-radius:9px; cursor:pointer; border:1px solid transparent; text-align:left;
+    width:100%; background:none; font-family:inherit; color:var(--ink);}
+  .wkrow:hover{background:var(--chip);}
+  .wkrow.on{background:var(--chip); border-color:var(--accent2);}
+  .wkd{font-size:.71rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;}
+  .wkg{font-size:.8rem; font-weight:600;}
+  .wkname{font-size:.88rem; font-weight:600; line-height:1.25;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .wketh{font-size:.72rem; color:var(--muted);}
+  .wkfast{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .wkfeast{color:var(--accent2);}
   .legend{display:flex; flex-wrap:wrap; gap:5px 12px; margin-top:12px; font-size:.73rem; color:var(--muted); justify-content:center;}
   .legend span{display:flex; align-items:center; gap:4px;}
   .sw{width:10px; height:10px; border-radius:3px; display:inline-block;}
@@ -121,9 +146,18 @@
   </div>
 
   <div class="card">
-    <div class="label">Today's commemoration</div>
+    <div class="comhead">
+      <button id="comPrev" aria-label="Previous day">&lsaquo;</button>
+      <div class="label" id="comlabel">Today's commemoration</div>
+      <button id="comNext" aria-label="Next day">&rsaquo;</button>
+    </div>
     <div class="saintname" id="saintname"></div>
     <div class="saintnote" id="saintnote"></div>
+    <button class="todaybtn" id="comToday" style="display:none">Back to today</button>
+    <div class="wk">
+      <div class="wkhead" id="wkhead">The next seven days</div>
+      <div id="weekstrip"></div>
+    </div>
   </div>
 
   <div class="card">
@@ -151,6 +185,9 @@
       <button id="caltoday">Today · 30 days</button>
       <label>Jump to year: <select id="calyearsel"></select></label>
     </div>
+    <div style="text-align:center;font-size:.7rem;color:var(--muted);margin-top:10px">
+      Large number: Gregorian · small: Ethiopian. Tap any day for its commemoration.
+    </div>
     <div class="legend">
       <span><i class="sw" style="background:var(--c-lent)"></i>Great Lent</span>
       <span><i class="sw" style="background:var(--c-himamat)"></i>Holy Week</span>
@@ -167,7 +204,7 @@
 
   <footer>
     Dates computed on your device (Julian-day conversion + Bahire Hasab, verified against 2026–2028). Companion to the <i>Ethiopian Orthodox Tewahedo Church Handbook</i>. Saint assignments follow the common Senkessar-derived grids; parish lists vary on a few days (8, 9, 11, 22, 26). Fasting status is the canonical rule of thumb — your parish and soul-father are the authority.
-    <div id="buildstamp" style="margin-top:6px; opacity:.8;">App updated: August 3, 2026 · v3.0 — 365 facts, one for every day of the year, each verified against the Handbook and carrying its section · dark / light toggle</div>
+    <div id="buildstamp" style="margin-top:6px; opacity:.8;">App updated: August 3, 2026 · v3.1 — 365 facts (one per day, each citing its Handbook section) · next-7-days commemorations with a tappable calendar · Ethiopian and Gregorian dates side by side · dark / light toggle</div>
   </footer>
 </div>
 <div class="toast" id="toast">Copied!</div>
@@ -643,10 +680,78 @@ function classifyDay(j){
 const todayC=classifyDay(jdn);
 document.getElementById("fastchip").innerHTML=(todayC.isFast?"🍃 ":"🍗 ")+todayC.label+(todayC.feast?" · ✨ "+todayC.feast:"");
 
-/* Saint */
-const s=SAINTS[eth.d-1];
-document.getElementById("saintname").textContent=`${MONTHS[eth.m-1]} ${eth.d} — ${s[0]}`;
-document.getElementById("saintnote").textContent=s[1];
+/* ===== Commemorations (Handbook §8.4a) =====
+   The 30-day grid is built for a 30-day month. Pagume has only 5-6 days, and every
+   prominent monthly day — Michael 12, Kidane Mehret 16, Maryam 21, Bale Wold 29 —
+   falls past its end, so the grid cannot run there; the Coptic monthly cycle behaves
+   identically and never reaches the epagomenal Nasi. Pagume carries its own proper
+   Senkessar instead, and those entries are NOT the grid's: Pagume 3 is Rufael, not
+   Ba'ata. Whether the grid's own days 1-6 are ALSO kept is unsettled in the sources,
+   so this app does not claim they are. */
+const PAGUME=[
+["Eutychius, Besoy & Pachomius","With Serapion, and the imprisonment of John the Baptist. The short thirteenth month keeps its own Senkessar — the monthly grid does not run here."],
+["Titus the Apostle","Paul's companion and fellow worker, on the second of the added days."],
+["Archangel Rufael","The dedication of his church — kept as Finote Semay, 'the opening of heaven,' as the Ethiopian year turns. With Melchisedek; Ethiopic lists add King Zara Yaqob."],
+["Abba Benjamin & Liberius of Rome","The fourth of the added days."],
+["Jacob of Cairo & the Prophet Amos","With Barsuma the Naked and Abba Magder — the last day of an ordinary Ethiopian year."],
+["Thanksgiving for the year","The sixth day comes only in leap years, though the Senkessar directs its reading either way: thanksgiving 'for this hour, which is the end of the revolution of the year of mercy.'"]
+];
+function saintFor(j){
+  const e=jdnToEth(j), pag=(e.m===13);
+  const row = pag ? (PAGUME[e.d-1]||PAGUME[5]) : SAINTS[e.d-1];
+  return {eth:e, name:row[0], note:row[1], pagume:pag, dateLabel:`${MONTHS[e.m-1]} ${e.d}`};
+}
+const s=saintFor(jdn);        /* today — also used by the share text */
+let viewJ=jdn;                /* the day the card is currently showing */
+
+function relDay(j){
+  const d=j-jdn;
+  if(d===0) return "Today";
+  if(d===1) return "Tomorrow";
+  if(d===-1) return "Yesterday";
+  const g=jdnToGreg(j);
+  return new Date(g.y,g.m-1,g.d).toLocaleDateString(undefined,{weekday:"long"});
+}
+function gLabel(j,opts){
+  const g=jdnToGreg(j);
+  return new Date(g.y,g.m-1,g.d).toLocaleDateString(undefined,opts);
+}
+function renderWeek(from){
+  let html="";
+  for(let k=0;k<7;k++){
+    const j=from+k, sf=saintFor(j), c=classifyDay(j);
+    const dot = c.type==="none" ? "<span></span>" :
+      `<span class="wkfast" style="background:var(--c-${c.type})" title="${c.label.replace(/"/g,"&quot;")}"></span>`;
+    html+=`<button class="wkrow${j===viewJ?" on":""}" data-j="${j}">`+
+      `<span><span class="wkd">${gLabel(j,{weekday:"short"})}</span><br>`+
+      `<span class="wkg">${gLabel(j,{month:"short",day:"numeric"})}</span></span>`+
+      `<span><span class="wkname">${sf.name}</span><br>`+
+      `<span class="wketh">${sf.dateLabel}${c.feast?' · <b class="wkfeast">'+c.feast+'</b>':""}</span></span>`+
+      dot+`</button>`;
+  }
+  const el=document.getElementById("weekstrip");
+  el.innerHTML=html;
+  el.querySelectorAll(".wkrow").forEach(b=>b.addEventListener("click",()=>renderSaint(Number(b.dataset.j))));
+}
+function renderSaint(j){
+  viewJ=j;
+  const sf=saintFor(j), isToday=(j===jdn);
+  document.getElementById("comlabel").textContent = isToday
+    ? "Today's commemoration"
+    : relDay(j)+" · "+gLabel(j,{month:"short",day:"numeric"});
+  document.getElementById("saintname").textContent=`${sf.dateLabel} — ${sf.name}`;
+  document.getElementById("saintnote").textContent=sf.note;
+  document.getElementById("comToday").style.display = isToday ? "none" : "block";
+  document.getElementById("wkhead").textContent = isToday
+    ? "The next seven days" : "Seven days from "+sf.dateLabel;
+  renderWeek(j);
+  document.querySelectorAll(".day").forEach(el=>
+    el.classList.toggle("viewing", Number(el.dataset.j)===j && j!==jdn));
+}
+document.getElementById("comPrev").addEventListener("click",()=>renderSaint(viewJ-1));
+document.getElementById("comNext").addEventListener("click",()=>renderSaint(viewJ+1));
+document.getElementById("comToday").addEventListener("click",()=>renderSaint(jdn));
+renderSaint(jdn);
 
 /* Fact of the day — deterministic by date so friends see the same one */
 let factIdx=((jdn%FACTS.length)+FACTS.length)%FACTS.length;
@@ -707,10 +812,20 @@ function calRender(){
     if(c.type==="tinsae"){cls+=" tinsaeday"; style="background:var(--c-tinsae)";}
     else if(c.isFast){cls+=" fastday"; style=`background:var(--c-${c.type})`;}
     if(j===jdn) cls+=" today";
-    const tip=`${GMON[g.m-1]} ${g.d}, ${g.y} — ${c.label}${c.feast?" · "+c.feast:""}`;
-    html+=`<div class="${cls}" style="${style}" title="${tip}">${g.d}${c.feast?'<span class="fdot"></span>':""}</div>`;
+    const ce=jdnToEth(j), csf=saintFor(j);
+    if(j===viewJ && j!==jdn) cls+=" viewing";
+    const tip=`${GMON[g.m-1]} ${g.d}, ${g.y} · ${MONTHS[ce.m-1]} ${ce.d} — ${csf.name}\n${c.label}${c.feast?" · "+c.feast:""}`;
+    html+=`<button class="${cls}" style="${style}" title="${tip.replace(/"/g,"&quot;")}" data-j="${j}">`+
+      `<span class="dg">${g.d}</span><span class="de">${ce.d}</span>`+
+      `${c.feast?'<span class="fdot"></span>':""}</button>`;
   }
-  document.getElementById("calgrid").innerHTML=html;
+  const grid=document.getElementById("calgrid");
+  grid.innerHTML=html;
+  grid.querySelectorAll(".day").forEach(b=>b.addEventListener("click",()=>{
+    renderSaint(Number(b.dataset.j));
+    const t=document.getElementById("saintname");
+    if(t.scrollIntoView) t.scrollIntoView({behavior:"smooth",block:"center"});
+  }));
   const sg=jdnToGreg(startJ), eg=jdnToGreg(endJ), se=jdnToEth(startJ), ee=jdnToEth(endJ);
   document.getElementById("callabelg").textContent = cal.mode==="roll"
     ? (sg.m===eg.m?`${GMON[sg.m-1]} ${sg.y}`:`${GMON[sg.m-1]} – ${GMON[eg.m-1]} ${eg.y}`)+" · next 30 days"
